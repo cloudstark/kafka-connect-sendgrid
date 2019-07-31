@@ -1,0 +1,8 @@
+sudo: false
+language: java
+install: true
+matrix:
+  include:
+    - jdk: oraclejdk8
+script:
+  - "mvn verify"

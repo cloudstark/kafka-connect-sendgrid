@@ -10,7 +10,16 @@
 
     <name>kafka-connect-sendgrid</name>
     <description>Kafka Connect Sink Connector for Sendgrid</description>
-    <url></url>
+    <url>https://github.com/cloudstark/kafka-connect-sendgrid</url>
+
+    <developers>
+        <developer>
+            <name>cloudstark.solutions</name>
+            <email>info@cloudstark.solutions</email>
+            <organization>SMB GmbH</organization>
+            <organizationUrl>https://www.smb-tec.com</organizationUrl>
+        </developer>
+    </developers>
 
     <licenses>
         <license>
@@ -23,19 +32,9 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <kafka.version>2.2.0</kafka.version>
-        <jackson.version>2.9.9.1</jackson.version>
-        <junit.version>4.12</junit.version>
-        <junit.jupiter.version>5.0.1</junit.jupiter.version>
-        <junit.vintage.version>${junit.version}.1</junit.vintage.version>
-        <junit.platform.version>1.0.1</junit.platform.version>
-        <mockito-all.version>1.10.19</mockito-all.version>
-        <sendgrid.version>4.4.1</sendgrid.version>
-
-        <confluent.connect.plugin.version>0.11.1</confluent.connect.plugin.version>
-
+        <kafka.connect.api.version>2.0.0</kafka.connect.api.version>
+        <sendgrid.api.version>4.4.1</sendgrid.api.version>
         <confluent.maven.repo>http://packages.confluent.io/maven/</confluent.maven.repo>
     </properties>
 
@@ -56,56 +55,43 @@
         </resources>
 
         <plugins>
+
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.1.0</version>
-                <configuration>
-                </configuration>
+                <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
                     <execution>
                         <phase>package</phase>
                         <goals>
-                            <goal>shade</goal>
+                            <goal>single</goal>
                         </goals>
-                        <configuration>
-                            <artifactSet>
-                                <excludes>
-                                    <exclude>org.apache.kafka:kafka-clients</exclude>
-                                </excludes>
-                            </artifactSet>
-                        </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.7.0</version>
                 <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                    <compilerArgument>-Xlint:all</compilerArgument>
-                    <showWarnings>true</showWarnings>
-                    <showDeprecation>true</showDeprecation>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <finalName>${project.artifactId}-${project.version}</finalName>
+                    <appendAssemblyId>false</appendAssemblyId>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>2.17</version>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.3.1</version>
                 <executions>
                     <execution>
-                        <id>validate</id>
-                        <phase>validate</phase>
-                        <configuration>
-                            <configLocation>google_checks.xml</configLocation>
-                        </configuration>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
+                        <id>default-jar</id>
+                        <phase>none</phase>
                     </execution>
                 </executions>
             </plugin>
+
         </plugins>
     </build>
 
@@ -113,75 +99,26 @@
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>connect-api</artifactId>
-            <version>${kafka.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>connect-json</artifactId>
-            <version>${kafka.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.datamountaineer</groupId>
-            <artifactId>kafka-connect-common</artifactId>
-            <version>1.1.7</version>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
+            <version>${kafka.connect.api.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.sendgrid</groupId>
             <artifactId>sendgrid-java</artifactId>
-            <version>${sendgrid.version}</version>
+            <version>${sendgrid.api.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.mockito</groupId>
+                    <artifactId>mockito-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.4</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>${junit.jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <!-- Only required to run tests in an IDE that bundles an older version -->
-        <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-launcher</artifactId>
-            <version>${junit.platform.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <!-- Only required to run tests in an IDE that bundles an older version -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>${junit.jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <!-- Only required to run tests in an IDE that bundles an older version -->
-        <dependency>
-            <groupId>org.junit.vintage</groupId>
-            <artifactId>junit-vintage-engine</artifactId>
-            <version>${junit.vintage.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-            <version>${mockito-all.version}</version>
-            <scope>test</scope>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
+
 </project>
